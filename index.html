@@ -476,6 +476,14 @@
                 score += 2; // ハードドロップボーナス
             }
             lockPiece();
+            updateStats();
+        }
+
+        function softDrop() {
+            if (isGameOver || isPaused) return;
+            drop();
+            score += 1;
+            updateStats();
         }
 
         function rotate() {
@@ -705,7 +713,11 @@
          */
         // キーボード操作
         document.addEventListener('keydown', (e) => {
-            if (isGameOver || overlay.classList.contains('hidden') === false) return;
+            const pauseKey = ['Escape', 'p', 'P'].includes(e.key);
+            if (isGameOver || (!overlay.classList.contains('hidden') && !(isPaused && pauseKey))) return;
+            if (['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', ' ', 'Escape', 'p', 'P'].includes(e.key)) {
+                e.preventDefault();
+            }
             
             switch (e.key) {
                 case 'ArrowLeft':
@@ -715,9 +727,7 @@
                     move(1);
                     break;
                 case 'ArrowDown':
-                    drop();
-                    score += 1; // ソフトドロップボーナス
-                    updateStats();
+                    softDrop();
                     break;
                 case 'ArrowUp':
                     rotate();
@@ -728,6 +738,7 @@
                 case 'Escape':
                 case 'p':
                 case 'P':
+                    if (e.repeat) break;
                     isPaused = !isPaused;
                     if (isPaused) {
                         overlayTitle.textContent = "PAUSED";
@@ -763,7 +774,7 @@
 
         bindControl('btn-left', () => move(-1));
         bindControl('btn-right', () => move(1));
-        bindControl('btn-down', () => { drop(); score++; updateStats(); });
+        bindControl('btn-down', softDrop);
         bindControl('btn-rotate', rotate);
         bindControl('btn-drop', hardDrop);
 
